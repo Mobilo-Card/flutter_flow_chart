@@ -3,10 +3,10 @@ import 'package:flutter_flow_chart/src/elements/flow_element.dart';
 import 'package:flutter_flow_chart/src/objects/element_text_widget.dart';
 import 'package:flutter_flow_chart/src/objects/element_image_widget.dart';
 
-/// A kind of element
-class OvalWidget extends StatelessWidget {
+/// A kind of element - Curved Rectangle (left side curved)
+class CurvedRectangleWidget extends StatelessWidget {
   ///
-  const OvalWidget({
+  const CurvedRectangleWidget({
     required this.element,
     super.key,
   });
@@ -24,7 +24,7 @@ class OvalWidget extends StatelessWidget {
         children: [
           CustomPaint(
             size: element.size,
-            painter: _OvalPainter(
+            painter: _CurvedRectanglePainter(
               element: element,
             ),
           ),
@@ -37,10 +37,11 @@ class OvalWidget extends StatelessWidget {
   }
 }
 
-class _OvalPainter extends CustomPainter {
-  _OvalPainter({
+class _CurvedRectanglePainter extends CustomPainter {
+  _CurvedRectanglePainter({
     required this.element,
   });
+
   final FlowElement element;
 
   @override
@@ -49,10 +50,39 @@ class _OvalPainter extends CustomPainter {
     final path = Path();
 
     paint
+      ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.fill
       ..color = element.backgroundColor;
 
-    path.addOval(Rect.fromLTWH(0, 0, size.width, size.height));
+    // Curved Rectangle shape: rectangle with curved left side only
+    final curveRadius = size.height * 0.4; // 40% of height for the curve radius (more rounded)
+    
+    // Start from the curved left side
+    final leftCenter = Offset(curveRadius, size.height / 2);
+    
+    // Create the path starting from the top-left curve
+    path.moveTo(curveRadius, 0); // Start at top of curve
+    
+    // Top edge (straight)
+    path.lineTo(size.width, 0);
+    
+    // Right edge (straight)
+    path.lineTo(size.width, size.height);
+    
+    // Bottom edge (straight)
+    path.lineTo(curveRadius, size.height);
+    
+    // Left curved side
+    path.addArc(
+      Rect.fromCenter(
+        center: leftCenter,
+        width: curveRadius * 2,
+        height: size.height,
+      ),
+      1.5708, // 90 degrees in radians (start from top)
+      3.14159, // 180 degrees in radians (half circle)
+    );
+
     if (element.elevation > 0.01) {
       canvas.drawShadow(
         path.shift(Offset(element.elevation, element.elevation)),
@@ -63,6 +93,7 @@ class _OvalPainter extends CustomPainter {
     }
     canvas.drawPath(path, paint);
 
+    // Draw border
     paint
       ..strokeWidth = element.borderThickness
       ..color = element.borderColor

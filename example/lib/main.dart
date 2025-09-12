@@ -502,6 +502,195 @@ class _MyHomePageState extends State<MyHomePage> {
             },
           ),
           ActionChip(
+            label: const Text('Add rect with image & title/subtitle'),
+            onPressed: () {
+              dashboard.addElement(
+                FlowElement(
+                  position: position,
+                  size: const Size(100, 80),
+                  title: 'Gmail',
+                  backgroundColor: Colors.white,
+                  subtitle: 'Email Service',
+                  titleColor: Colors.blue,
+                  subtitleColor: Colors.grey,
+                  titleSize: 16,
+                  subtitleSize: 12,
+                  titleIsBold: true,
+                  titleAlign: TextAlign.center,
+                  subtitleAlign: TextAlign.center,
+                  handlerSize: 25,
+                  kind: ElementKind.rectangle,
+                  imageProvider: const AssetImage('images/gmail.png'),
+                  handlers: [
+                    Handler.bottomCenter,
+                    Handler.topCenter,
+                    Handler.leftCenter,
+                    Handler.rightCenter,
+                  ],
+                ),
+              );
+            },
+          ),
+          ActionChip(
+            label: const Text('Add diamond with image & title/subtitle'),
+            onPressed: () {
+              dashboard.addElement(
+                FlowElement(
+                  position: position,
+                  size: const Size(80, 80),
+                  title: 'Decision',
+                  subtitle: 'Yes/No',
+                  titleColor: Colors.red,
+                  subtitleColor: Colors.orange,
+                  titleSize: 14,
+                  subtitleSize: 10,
+                  titleIsBold: true,
+                  titleAlign: TextAlign.center,
+                  subtitleAlign: TextAlign.center,
+                  handlerSize: 25,
+                  kind: ElementKind.diamond,
+                  imageProvider: const AssetImage('images/gmail.png'),
+                  handlers: [
+                    Handler.bottomCenter,
+                    Handler.topCenter,
+                    Handler.leftCenter,
+                    Handler.rightCenter,
+                  ],
+                ),
+              );
+            },
+          ),
+          ActionChip(
+            label: const Text('Add rect with text only (no image)'),
+            onPressed: () {
+              dashboard.addElement(
+                FlowElement(
+                  position: position,
+                  size: const Size(120, 60),
+                  text: 'Text Only',
+                  textColor: Colors.white,
+                  backgroundColor: Colors.blue,
+                  textSize: 18,
+                  textIsBold: true,
+                  textAlign: TextAlign.center,
+                  handlerSize: 25,
+                  kind: ElementKind.rectangle,
+                  handlers: [
+                    Handler.bottomCenter,
+                    Handler.topCenter,
+                    Handler.leftCenter,
+                    Handler.rightCenter,
+                  ],
+                ),
+              );
+            },
+          ),
+          ActionChip(
+            label: const Text('Add rect with left-aligned text'),
+            onPressed: () {
+              dashboard.addElement(
+                FlowElement(
+                  position: position,
+                  size: const Size(120, 60),
+                  text: 'Left Aligned Text',
+                  textColor: Colors.black,
+                  backgroundColor: Colors.green,
+                  textSize: 16,
+                  textIsBold: false,
+                  textAlign: TextAlign.left,
+                  handlerSize: 25,
+                  kind: ElementKind.rectangle,
+                  handlers: [
+                    Handler.bottomCenter,
+                    Handler.topCenter,
+                    Handler.leftCenter,
+                    Handler.rightCenter,
+                  ],
+                ),
+              );
+            },
+          ),
+          ActionChip(
+            label: const Text('Add rect with right-aligned text'),
+            onPressed: () {
+              dashboard.addElement(
+                FlowElement(
+                  position: position,
+                  size: const Size(120, 60),
+                  text: 'Right Aligned Text',
+                  textColor: Colors.black,
+                  backgroundColor: Colors.orange,
+                  textSize: 16,
+                  textIsBold: false,
+                  textAlign: TextAlign.right,
+                  handlerSize: 25,
+                  kind: ElementKind.rectangle,
+                  handlers: [
+                    Handler.bottomCenter,
+                    Handler.topCenter,
+                    Handler.leftCenter,
+                    Handler.rightCenter,
+                  ],
+                ),
+              );
+            },
+          ),
+          ActionChip(
+            label: const Text('Add Curved Rectangle'),
+            onPressed: () {
+              dashboard.addElement(
+                FlowElement(
+                  position: position,
+                  size: const Size(120, 80),
+                  text: 'Curved',
+                  textColor: Colors.white,
+                  backgroundColor: Colors.teal,
+                  textSize: 18,
+                  textIsBold: true,
+                  textAlign: TextAlign.center,
+                  handlerSize: 25,
+                  kind: ElementKind.curvedRectangle,
+                  handlers: [
+                    Handler.topCenter,
+                    Handler.bottomCenter,
+                    Handler.leftCenter,
+                    Handler.rightCenter,
+                  ],
+                ),
+              );
+            },
+          ),
+          ActionChip(
+            label: const Text('Add Curved Rectangle with Image'),
+            onPressed: () {
+              dashboard.addElement(
+                FlowElement(
+                  position: position,
+                  size: const Size(120, 80),
+                  title: 'Curved Shape',
+                  subtitle: 'Left Curve Only',
+                  titleColor: Colors.teal,
+                  subtitleColor: Colors.grey,
+                  titleSize: 16,
+                  subtitleSize: 12,
+                  titleIsBold: true,
+                  titleAlign: TextAlign.center,
+                  subtitleAlign: TextAlign.center,
+                  backgroundColor: Colors.cyan,
+                  handlerSize: 25,
+                  kind: ElementKind.curvedRectangle,
+                  imageProvider: const AssetImage('images/gmail.png'),
+                  handlers: [
+                    Handler.topCenter,
+                    Handler.bottomCenter,
+                    Handler.leftCenter,
+                    Handler.rightCenter,
+                  ],
+                ),
+              );
+            },
+          ),
+          ActionChip(
             label: const Text('Remove all'),
             onPressed: () {
               dashboard.removeAllElements();

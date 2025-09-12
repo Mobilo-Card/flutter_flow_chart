@@ -9,7 +9,7 @@ import 'package:flutter_flow_chart/flutter_flow_chart.dart';
 import 'package:flutter_flow_chart/src/elements/connection_params.dart';
 import 'package:uuid/uuid.dart';
 
-/// Kinf od element
+/// Kind of element
 enum ElementKind {
   ///
   rectangle,
@@ -31,6 +31,18 @@ enum ElementKind {
 
   ///
   image,
+
+  ///
+  curvedRectangle,
+}
+
+/// Text position relative to the element
+enum TextPosition {
+  ///
+  center,
+
+  ///
+  below,
 }
 
 /// Handler supported by elements
@@ -69,10 +81,22 @@ class FlowElement extends ChangeNotifier {
     Offset position = Offset.zero,
     this.size = Size.zero,
     this.text = '',
+    this.title = '',
+    this.subtitle = '',
     this.textColor = Colors.black,
+    this.titleColor = Colors.black,
+    this.subtitleColor = Colors.grey,
     this.fontFamily,
     this.textSize = 24,
+    this.titleSize = 16,
+    this.subtitleSize = 12,
     this.textIsBold = false,
+    this.titleIsBold = true,
+    this.subtitleIsBold = false,
+    this.textAlign = TextAlign.center,
+    this.titleAlign = TextAlign.center,
+    this.subtitleAlign = TextAlign.center,
+    this.textPosition = TextPosition.center,
     this.kind = ElementKind.rectangle,
     this.handlers = const [
       Handler.topCenter,
@@ -86,6 +110,7 @@ class FlowElement extends ChangeNotifier {
     this.borderThickness = 3,
     this.elevation = 4,
     this.data,
+    this.imageProvider,
     this.isDraggable = true,
     this.isResizable = false,
     this.isConnectable = true,
@@ -109,10 +134,30 @@ class FlowElement extends ChangeNotifier {
         (map['size.height'] as num).toDouble(),
       ),
       text: map['text'] as String,
+      title: map['title'] as String? ?? '',
+      subtitle: map['subtitle'] as String? ?? '',
       textColor: Color(map['textColor'] as int),
+      titleColor: map['titleColor'] != null ? Color(map['titleColor'] as int) : Colors.black,
+      subtitleColor: map['subtitleColor'] != null ? Color(map['subtitleColor'] as int) : Colors.grey,
       fontFamily: map['fontFamily'] as String?,
       textSize: (map['textSize'] as num).toDouble(),
+      titleSize: (map['titleSize'] as num?)?.toDouble() ?? 16.0,
+      subtitleSize: (map['subtitleSize'] as num?)?.toDouble() ?? 12.0,
       textIsBold: map['textIsBold'] as bool,
+      titleIsBold: map['titleIsBold'] as bool? ?? true,
+      subtitleIsBold: map['subtitleIsBold'] as bool? ?? false,
+      textAlign: map['textAlign'] != null 
+          ? TextAlign.values[map['textAlign'] as int]
+          : TextAlign.center,
+      titleAlign: map['titleAlign'] != null 
+          ? TextAlign.values[map['titleAlign'] as int]
+          : TextAlign.center,
+      subtitleAlign: map['subtitleAlign'] != null 
+          ? TextAlign.values[map['subtitleAlign'] as int]
+          : TextAlign.center,
+      textPosition: map['textPosition'] != null 
+          ? TextPosition.values[map['textPosition'] as int]
+          : TextPosition.center,
       kind: ElementKind.values[map['kind'] as int],
       handlers: List<Handler>.from(
         (map['handlers'] as List<dynamic>).map<Handler>(
@@ -141,7 +186,10 @@ class FlowElement extends ChangeNotifier {
         (map['positionDx'] as num).toDouble(),
         (map['positionDy'] as num).toDouble(),
       )
-      ..serializedData = map['data'] as String?;
+      ..serializedData = map['data'] as String?
+      ..imageProvider = map['imageProvider'] != null 
+          ? AssetImage(map['imageProvider'] as String)
+          : null;
     return e;
   }
 
@@ -158,11 +206,23 @@ class FlowElement extends ChangeNotifier {
   /// The size of the [FlowElement]
   Size size;
 
-  /// Element text
+  /// Element text (legacy - use title instead)
   String text;
+
+  /// Title text (displayed below element when image is present)
+  String title;
+
+  /// Subtitle text (displayed below title when image is present)
+  String subtitle;
 
   /// Text color
   Color textColor;
+
+  /// Title text color
+  Color titleColor;
+
+  /// Subtitle text color
+  Color subtitleColor;
 
   /// Text font family
   String? fontFamily;
@@ -170,8 +230,32 @@ class FlowElement extends ChangeNotifier {
   /// Text size
   double textSize;
 
+  /// Title text size
+  double titleSize;
+
+  /// Subtitle text size
+  double subtitleSize;
+
   /// Makes text bold if true
   bool textIsBold;
+
+  /// Makes title bold if true
+  bool titleIsBold;
+
+  /// Makes subtitle bold if true
+  bool subtitleIsBold;
+
+  /// Text alignment for regular text
+  TextAlign textAlign;
+
+  /// Title text alignment
+  TextAlign titleAlign;
+
+  /// Subtitle text alignment
+  TextAlign subtitleAlign;
+
+  /// Position of text relative to element
+  TextPosition textPosition;
 
   /// Element shape
   ElementKind kind;
@@ -218,6 +302,9 @@ class FlowElement extends ChangeNotifier {
   /// Kind-specific data to load/save
   String? serializedData;
 
+  /// Image provider for the element (can be AssetImage, NetworkImage, etc.)
+  ImageProvider? imageProvider;
+
   @override
   String toString() {
     return 'FlowElement{kind: $kind, text: $text}';
@@ -254,9 +341,33 @@ class FlowElement extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Set title
+  void setTitle(String title) {
+    this.title = title;
+    notifyListeners();
+  }
+
+  /// Set subtitle
+  void setSubtitle(String subtitle) {
+    this.subtitle = subtitle;
+    notifyListeners();
+  }
+
   /// Set text color
   void setTextColor(Color color) {
     textColor = color;
+    notifyListeners();
+  }
+
+  /// Set title color
+  void setTitleColor(Color color) {
+    titleColor = color;
+    notifyListeners();
+  }
+
+  /// Set subtitle color
+  void setSubtitleColor(Color color) {
+    subtitleColor = color;
     notifyListeners();
   }
 
@@ -272,9 +383,63 @@ class FlowElement extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Set title size
+  void setTitleSize(double size) {
+    titleSize = size;
+    notifyListeners();
+  }
+
+  /// Set subtitle size
+  void setSubtitleSize(double size) {
+    subtitleSize = size;
+    notifyListeners();
+  }
+
   /// Set text bold
   void setTextIsBold(bool isBold) {
     textIsBold = isBold;
+    notifyListeners();
+  }
+
+  /// Set title bold
+  void setTitleIsBold(bool isBold) {
+    titleIsBold = isBold;
+    notifyListeners();
+  }
+
+  /// Set subtitle bold
+  void setSubtitleIsBold(bool isBold) {
+    subtitleIsBold = isBold;
+    notifyListeners();
+  }
+
+  /// Set text alignment
+  void setTextAlign(TextAlign align) {
+    textAlign = align;
+    notifyListeners();
+  }
+
+  /// Set title alignment
+  void setTitleAlign(TextAlign align) {
+    titleAlign = align;
+    notifyListeners();
+  }
+
+  /// Set subtitle alignment
+  void setSubtitleAlign(TextAlign align) {
+    subtitleAlign = align;
+    notifyListeners();
+  }
+
+  /// Set text position
+  void setTextPosition(TextPosition position) {
+    textPosition = position;
+    notifyListeners();
+  }
+
+  /// Set image provider
+  void setImageProvider(ImageProvider? provider) {
+    imageProvider = provider;
     notifyListeners();
   }
 
@@ -328,10 +493,22 @@ class FlowElement extends ChangeNotifier {
     return position.hashCode ^
         size.hashCode ^
         text.hashCode ^
+        title.hashCode ^
+        subtitle.hashCode ^
         textColor.hashCode ^
+        titleColor.hashCode ^
+        subtitleColor.hashCode ^
         fontFamily.hashCode ^
         textSize.hashCode ^
+        titleSize.hashCode ^
+        subtitleSize.hashCode ^
         textIsBold.hashCode ^
+        titleIsBold.hashCode ^
+        subtitleIsBold.hashCode ^
+        textAlign.hashCode ^
+        titleAlign.hashCode ^
+        subtitleAlign.hashCode ^
+        textPosition.hashCode ^
         id.hashCode ^
         kind.hashCode ^
         handlers.hashCode ^
@@ -343,7 +520,8 @@ class FlowElement extends ChangeNotifier {
         next.hashCode ^
         isResizable.hashCode ^
         isConnectable.hashCode ^
-        isDeletable.hashCode;
+        isDeletable.hashCode ^
+        imageProvider.hashCode;
   }
 
   ///
@@ -354,10 +532,22 @@ class FlowElement extends ChangeNotifier {
       'size.width': size.width,
       'size.height': size.height,
       'text': text,
+      'title': title,
+      'subtitle': subtitle,
       'textColor': textColor.value,
+      'titleColor': titleColor.value,
+      'subtitleColor': subtitleColor.value,
       'fontFamily': fontFamily,
       'textSize': textSize,
+      'titleSize': titleSize,
+      'subtitleSize': subtitleSize,
       'textIsBold': textIsBold,
+      'titleIsBold': titleIsBold,
+      'subtitleIsBold': subtitleIsBold,
+      'textAlign': textAlign.index,
+      'titleAlign': titleAlign.index,
+      'subtitleAlign': subtitleAlign.index,
+      'textPosition': textPosition.index,
       'id': id,
       'kind': kind.index,
       'handlers': handlers.map((x) => x.index).toList(),
@@ -367,6 +557,7 @@ class FlowElement extends ChangeNotifier {
       'borderThickness': borderThickness,
       'elevation': elevation,
       'data': serializedData,
+      'imageProvider': imageProvider is AssetImage ? (imageProvider as AssetImage).assetName : null,
       'next': next.map((x) => x.toMap()).toList(),
       'isDraggable': isDraggable,
       'isResizable': isResizable,

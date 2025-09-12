@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_flow_chart/flutter_flow_chart.dart';
+import 'package:flutter_flow_chart/src/objects/curved_rectangle_widget.dart';
 import 'package:flutter_flow_chart/src/objects/diamond_widget.dart';
 import 'package:flutter_flow_chart/src/objects/hexagon_widget.dart';
 import 'package:flutter_flow_chart/src/objects/image_widget.dart';
@@ -125,6 +126,8 @@ class _ElementWidgetState extends State<ElementWidget> {
         element = RectangleWidget(element: widget.element);
       case ElementKind.image:
         element = ImageWidget(element: widget.element);
+      case ElementKind.curvedRectangle:
+        element = CurvedRectangleWidget(element: widget.element);
     }
 
     if (widget.element.isConnectable && widget.element.handlers.isNotEmpty) {

@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_flow_chart/src/elements/flow_element.dart';
 import 'package:flutter_flow_chart/src/objects/element_text_widget.dart';
+import 'package:flutter_flow_chart/src/objects/element_image_widget.dart';
 
 /// A kind of element
 class StorageWidget extends StatelessWidget {
@@ -20,6 +21,7 @@ class StorageWidget extends StatelessWidget {
       width: element.size.width,
       height: element.size.height,
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           CustomPaint(
             size: element.size,
@@ -27,6 +29,8 @@ class StorageWidget extends StatelessWidget {
               element: element,
             ),
           ),
+          if (element.imageProvider != null)
+            ElementImageWidget(element: element),
           ElementTextWidget(element: element),
         ],
       ),
