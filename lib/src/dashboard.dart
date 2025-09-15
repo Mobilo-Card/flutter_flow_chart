@@ -6,8 +6,10 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_flow_chart/flutter_flow_chart.dart';
+import 'package:flutter_flow_chart/src/ui/draw_arrow.dart';
 import 'package:flutter_flow_chart/src/ui/segment_handler.dart';
 import 'package:uuid/uuid.dart';
 
@@ -27,6 +29,7 @@ class Dashboard extends ChangeNotifier {
     this.blockDefaultZoomGestures = false,
     this.minimumZoomFactor = 0.25,
     this.defaultArrowStyle = ArrowStyle.curve,
+    this.autoConnectElements = true,
   })  : elements = [],
         _dashboardPosition = Offset.zero,
         dashboardSize = Size.zero,
@@ -53,6 +56,7 @@ class Dashboard extends ChangeNotifier {
   factory Dashboard.fromMap(Map<String, dynamic> map) {
     final d = Dashboard(
       defaultArrowStyle: ArrowStyle.values[map['arrowStyle'] as int? ?? 0],
+      autoConnectElements: map['autoConnectElements'] as bool? ?? true,
     )
       ..elements = List<FlowElement>.from(
         (map['elements'] as List<dynamic>).map<FlowElement>(
@@ -111,6 +115,10 @@ class Dashboard extends ChangeNotifier {
   /// setting it to 0 will remove the limit
   double minimumZoomFactor;
 
+  /// Whether to automatically connect new elements to the previous element
+  /// default is true
+  bool autoConnectElements;
+
   final List<ConnectionListener> _connectionListeners = [];
 
   /// add listener called when a new connection is created
@@ -164,13 +172,54 @@ class Dashboard extends ChangeNotifier {
     if (notify) notifyListeners();
   }
 
+  /// set auto-connect elements property
+  void setAutoConnectElements(bool autoConnect, {bool notify = true}) {
+    autoConnectElements = autoConnect;
+    if (notify) notifyListeners();
+  }
+
+  /// Debug method to print current connections
+  void debugPrintConnections() {
+    debugPrint('=== Dashboard Connections ===');
+    for (int i = 0; i < elements.length; i++) {
+      final element = elements[i];
+      debugPrint('Element $i (${element.text}): ${element.next.length} connections');
+      for (int j = 0; j < element.next.length; j++) {
+        final destElement = findElementById(element.next[j].destElementId);
+        debugPrint('  -> ${destElement?.text ?? 'Unknown'}');
+      }
+    }
+    debugPrint('============================');
+  }
+
   /// add a [FlowElement] to the dashboard
   void addElement(FlowElement element, {bool notify = true, int? position}) {
     if (element.id.isEmpty) {
       element.id = const Uuid().v4();
     }
     element.setScale(1, gridBackgroundParams.scale);
-    elements.insert(position ?? elements.length, element);
+    
+    final insertPosition = position ?? elements.length;
+    elements.insert(insertPosition, element);
+    
+    // Auto-connect to previous element if this is not the first element and auto-connect is enabled
+    if (insertPosition > 0 && autoConnectElements) {
+      final previousElement = elements[insertPosition - 1];
+      debugPrint('Auto-connecting on add: ${previousElement.text} -> ${element.text}');
+      
+      // Create connection from previous element's right to new element's left
+      final arrowParams = ArrowParams(
+        startArrowPosition: Alignment.centerRight, // Previous element's right
+        endArrowPosition: Alignment.centerLeft,    // New element's left
+        style: defaultArrowStyle,
+        color: Colors.black,
+        thickness: 2.0,
+      );
+      
+      addNextById(previousElement, element.id, arrowParams, notify: false);
+      debugPrint('Auto-connection created: ${previousElement.next.length} connections from ${previousElement.text}');
+    }
+    
     if (notify) {
       notifyListeners();
     }
@@ -469,6 +518,64 @@ class Dashboard extends ChangeNotifier {
     return found;
   }
 
+  /// remove element and automatically reconnect remaining elements
+  /// return true if it has been removed
+  bool removeElementAndReconnect(FlowElement element, {bool notify = true}) {
+    debugPrint('removeElementAndReconnect called for element: ${element.text}');
+    final elementIndex = elements.indexOf(element);
+    debugPrint('Element index: $elementIndex, total elements: ${elements.length}');
+    if (elementIndex == -1) {
+      debugPrint('Element not found in list!');
+      return false;
+    }
+
+    // Find source and destination elements based on position in the list
+    FlowElement? sourceElement;
+    FlowElement? destElement;
+    
+    // Source element is the previous element in the list (if it exists)
+    if (elementIndex > 0) {
+      sourceElement = elements[elementIndex - 1];
+      debugPrint('Found source element: ${sourceElement.text}');
+    } else {
+      debugPrint('No source element (this is the first element)');
+    }
+    
+    // Destination element is the next element in the list (if it exists)
+    if (elementIndex < elements.length - 1) {
+      destElement = elements[elementIndex + 1];
+      debugPrint('Found destination element: ${destElement.text}');
+    } else {
+      debugPrint('No destination element (this is the last element)');
+    }
+
+    // If auto-connect is enabled and we have both source and destination, connect them BEFORE removal
+    if (autoConnectElements && sourceElement != null && destElement != null) {
+      debugPrint('Auto-reconnecting: ${sourceElement.text} -> ${destElement.text}');
+      
+      // Use the same logic as addElement - create connection from previous element's right to next element's left
+      final arrowParams = ArrowParams(
+        startArrowPosition: Alignment.centerRight, // Source element's right
+        endArrowPosition: Alignment.centerLeft,    // Destination element's left
+        style: defaultArrowStyle,
+        color: Colors.black,
+        thickness: 2.0,
+      );
+      
+      // Use addNextById like in addElement - this works because destElement is still in the elements list
+      addNextById(sourceElement, destElement.id, arrowParams, notify: false);
+      debugPrint('Auto-reconnection created: ${sourceElement.next.length} connections from ${sourceElement.text}');
+    }
+
+    // Now remove the element using the regular removeElement method
+    final removed = removeElement(element, notify: false);
+
+    if (notify) {
+      notifyListeners();
+    }
+    return removed;
+  }
+
   /// [factor] needs to be a non negative value.
   /// 1 is the default value.
   /// Giving a value above 1 will zoom the dashboard by the given factor
@@ -568,6 +675,7 @@ class Dashboard extends ChangeNotifier {
       'blockDefaultZoomGestures': blockDefaultZoomGestures,
       'minimumZoomFactor': minimumZoomFactor,
       'arrowStyle': defaultArrowStyle.index,
+      'autoConnectElements': autoConnectElements,
     };
   }
 
@@ -586,7 +694,40 @@ class Dashboard extends ChangeNotifier {
     final center = Offset(dashboardSize.width / 2, dashboardSize.height / 2);
     gridBackgroundParams.offset = center;
     if (elements.isNotEmpty) {
-      final currentDeviation = elements.first.position - center;
+      // Calculate the center of all elements combined
+      double minX = double.infinity;
+      double maxX = double.negativeInfinity;
+      double minY = double.infinity;
+      double maxY = double.negativeInfinity;
+      
+      for (final element in elements) {
+        final elementLeft = element.position.dx;
+        final elementRight = element.position.dx + element.size.width;
+        final elementTop = element.position.dy;
+        final elementBottom = element.position.dy + element.size.height;
+        
+        minX = minX < elementLeft ? minX : elementLeft;
+        maxX = maxX > elementRight ? maxX : elementRight;
+        minY = minY < elementTop ? minY : elementTop;
+        maxY = maxY > elementBottom ? maxY : elementBottom;
+      }
+      
+      // Calculate the center of the bounding box of all elements
+      final contentCenter = Offset(
+        (minX + maxX) / 2,
+        (minY + maxY) / 2,
+      );
+      
+      debugPrint('Recenter: Content bounds: ($minX, $minY) to ($maxX, $maxY)');
+      debugPrint('Recenter: Content center: (${contentCenter.dx}, ${contentCenter.dy})');
+      debugPrint('Recenter: Dashboard center: (${center.dx}, ${center.dy})');
+      
+      // Calculate the deviation needed to center the content
+      final currentDeviation = contentCenter - center;
+      
+      debugPrint('Recenter: Moving content by: (${currentDeviation.dx}, ${currentDeviation.dy})');
+      
+      // Move all elements and their connections
       for (final element in elements) {
         element.position -= currentDeviation;
         for (final next in element.next) {

@@ -216,16 +216,40 @@ class _ElementWidgetState extends State<ElementWidget> {
   }
 
   Widget _buildDeleteHandle() {
+    // Create the delete icon - use custom image if provided, otherwise use default icon
+    Widget deleteIcon;
+    if (widget.element.deleteIconProvider != null) {
+      deleteIcon = Image(
+        image: widget.element.deleteIconProvider!,
+        width: 20,
+        height: 20,
+        fit: BoxFit.contain,
+      );
+    } else {
+      deleteIcon = const Icon(Icons.delete_outline, size: 20);
+    }
+
     return Listener(
       onPointerUp: (event) {
-        widget.dashboard.removeElement(widget.element);
+        debugPrint('Delete button pressed for element: ${widget.element.text}');
+        debugPrint('Auto-connect enabled: ${widget.dashboard.autoConnectElements}');
+        // Use removeElementAndReconnect if auto-connect is enabled, otherwise use regular removeElement
+        if (widget.dashboard.autoConnectElements) {
+          debugPrint('Calling removeElementAndReconnect');
+          widget.dashboard.removeElementAndReconnect(widget.element);
+        } else {
+          debugPrint('Calling removeElement');
+          widget.dashboard.removeElement(widget.element);
+        }
       },
-      child: const Align(
-        alignment: Alignment.bottomLeft,
+      child: Align(
+        alignment: Alignment.topRight,
         child: HandlerWidget(
           width: 30,
           height: 30,
-          icon: Icon(Icons.delete_outline),
+          backgroundColor: Colors.white,
+          borderColor: Colors.transparent, // Remove border
+          icon: deleteIcon,
         ),
       ),
     );

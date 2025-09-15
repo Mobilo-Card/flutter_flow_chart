@@ -111,10 +111,11 @@ class FlowElement extends ChangeNotifier {
     this.elevation = 4,
     this.data,
     this.imageProvider,
+    this.deleteIconProvider,
     this.isDraggable = true,
     this.isResizable = false,
     this.isConnectable = true,
-    this.isDeletable = false,
+    this.isDeletable = true,
     List<ConnectionParams>? next,
   })  : next = next ?? [],
         id = const Uuid().v4(),
@@ -189,6 +190,9 @@ class FlowElement extends ChangeNotifier {
       ..serializedData = map['data'] as String?
       ..imageProvider = map['imageProvider'] != null 
           ? AssetImage(map['imageProvider'] as String)
+          : null
+      ..deleteIconProvider = map['deleteIconProvider'] != null 
+          ? AssetImage(map['deleteIconProvider'] as String)
           : null;
     return e;
   }
@@ -304,6 +308,9 @@ class FlowElement extends ChangeNotifier {
 
   /// Image provider for the element (can be AssetImage, NetworkImage, etc.)
   ImageProvider? imageProvider;
+
+  /// Image provider for the delete icon (can be AssetImage, NetworkImage, etc.)
+  ImageProvider? deleteIconProvider;
 
   @override
   String toString() {
@@ -558,6 +565,7 @@ class FlowElement extends ChangeNotifier {
       'elevation': elevation,
       'data': serializedData,
       'imageProvider': imageProvider is AssetImage ? (imageProvider as AssetImage).assetName : null,
+      'deleteIconProvider': deleteIconProvider is AssetImage ? (deleteIconProvider as AssetImage).assetName : null,
       'next': next.map((x) => x.toMap()).toList(),
       'isDraggable': isDraggable,
       'isResizable': isResizable,

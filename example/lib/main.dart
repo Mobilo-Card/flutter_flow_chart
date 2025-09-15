@@ -53,6 +53,23 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           IconButton(
             onPressed: () {
+              dashboard.setAutoConnectElements(!dashboard.autoConnectElements);
+              setState(() {}); // Refresh UI to show updated state
+            },
+            icon: Icon(
+              dashboard.autoConnectElements 
+                ? Icons.link 
+                : Icons.link_off,
+              color: dashboard.autoConnectElements 
+                ? Colors.green 
+                : Colors.grey,
+            ),
+            tooltip: dashboard.autoConnectElements 
+              ? 'Auto-connect enabled' 
+              : 'Auto-connect disabled',
+          ),
+          IconButton(
+            onPressed: () {
               dashboard.setZoomFactor(1.5 * dashboard.zoomFactor);
             },
             icon: const Icon(Icons.zoom_in),
@@ -377,6 +394,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     Handler.leftCenter,
                     Handler.rightCenter,
                   ],
+                  // Example: Custom delete icon using a network image
+                  // deleteIconProvider: NetworkImage('https://via.placeholder.com/20x20/ff0000/ffffff?text=X'),
                 ),
               );
             },
@@ -694,6 +713,41 @@ class _MyHomePageState extends State<MyHomePage> {
             label: const Text('Remove all'),
             onPressed: () {
               dashboard.removeAllElements();
+            },
+          ),
+          ActionChip(
+            label: const Text('Toggle Auto-Connect'),
+            onPressed: () {
+              dashboard.setAutoConnectElements(!dashboard.autoConnectElements);
+              setState(() {}); // Refresh UI to show updated state
+            },
+          ),
+          ActionChip(
+            label: const Text('Debug Connections'),
+            onPressed: () {
+              dashboard.debugPrintConnections();
+            },
+          ),
+          ActionChip(
+            label: const Text('Add with Custom Delete Icon'),
+            onPressed: () {
+              dashboard.addElement(
+                FlowElement(
+                  position: position,
+                  size: const Size(100, 50),
+                  text: 'Custom Delete',
+                  handlerSize: 25,
+                  kind: ElementKind.rectangle,
+                  handlers: [
+                    Handler.bottomCenter,
+                    Handler.topCenter,
+                    Handler.leftCenter,
+                    Handler.rightCenter,
+                  ],
+                  // Custom delete icon using a network image
+                  deleteIconProvider: NetworkImage('https://via.placeholder.com/20x20/ff0000/ffffff?text=X'),
+                ),
+              );
             },
           ),
           ActionChip(
