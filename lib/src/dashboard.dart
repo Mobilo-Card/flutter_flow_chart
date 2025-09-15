@@ -779,4 +779,15 @@ class Dashboard extends ChangeNotifier {
 
     recenter();
   }
+
+  /// clear the dashboard and load the new one from [jsonString]
+  void loadDashboardFromJson(String jsonString) {
+    final source = json.decode(jsonString) as Map<String, dynamic>;
+    loadDashboardData(source);
+  }
+
+  /// save the dashboard as a JSON string
+  String saveDashboardAsJsonString() {
+    return prettyJson();
+  }
 }

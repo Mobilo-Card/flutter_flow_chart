@@ -758,8 +758,187 @@ class _MyHomePageState extends State<MyHomePage> {
             label: const Text('LOAD dashboard'),
             onPressed: () => loadDashboard(dashboard),
           ),
+          ActionChip(
+            label: const Text('SAVE as JSON String'),
+            onPressed: () => saveDashboardAsJsonString(dashboard),
+          ),
+          ActionChip(
+            label: const Text('LOAD from JSON String'),
+            onPressed: () => loadDashboardFromJsonString(dashboard),
+          ),
         ],
       ),
     );
+  }
+}
+
+// Function to save dashboard to file
+void saveDashboard(Dashboard dashboard) {
+  try {
+    dashboard.saveDashboard('dashboard.json');
+    print('Dashboard saved successfully to dashboard.json');
+  } catch (e) {
+    print('Error saving dashboard: $e');
+  }
+}
+
+// Function to load dashboard from file
+void loadDashboard(Dashboard dashboard) {
+  try {
+    dashboard.loadDashboard('dashboard.json');
+    print('Dashboard loaded successfully from dashboard.json');
+  } catch (e) {
+    print('Error loading dashboard: $e');
+  }
+}
+
+// Function to save dashboard as JSON string
+void saveDashboardAsJsonString(Dashboard dashboard) {
+  try {
+    final jsonString = dashboard.saveDashboardAsJsonString();
+    print('Dashboard saved as JSON string:');
+    print(jsonString);
+    print('\n--- JSON String Length: ${jsonString.length} characters ---');
+  } catch (e) {
+    print('Error saving dashboard as JSON string: $e');
+  }
+}
+
+// Function to load dashboard from JSON string
+void loadDashboardFromJsonString(Dashboard dashboard) {
+  try {
+    // Example JSON string - you can replace this with any valid dashboard JSON
+    const exampleJsonString = '''
+{
+  "elements": [
+    {
+      "positionDx": 420.9453125,
+      "positionDy": 67.44140625,
+      "size.width": 120,
+      "size.height": 80,
+      "text": "Curved",
+      "title": "",
+      "subtitle": "",
+      "textColor": 4294967295,
+      "titleColor": 4278190080,
+      "subtitleColor": 4288585374,
+      "fontFamily": null,
+      "textSize": 18,
+      "titleSize": 16,
+      "subtitleSize": 12,
+      "textIsBold": true,
+      "titleIsBold": true,
+      "subtitleIsBold": false,
+      "textAlign": 2,
+      "titleAlign": 2,
+      "subtitleAlign": 2,
+      "textPosition": 0,
+      "id": "1425c852-9a90-40ac-b2ee-f9c7dea7a084",
+      "kind": 7,
+      "handlers": [
+        0,
+        1,
+        3,
+        2
+      ],
+      "handlerSize": 25,
+      "backgroundColor": 4278228616,
+      "borderColor": 4280391411,
+      "borderThickness": 3,
+      "elevation": 4,
+      "data": null,
+      "imageProvider": null,
+      "deleteIconProvider": null,
+      "next": [
+        {
+          "destElementId": "288b9ec2-edc0-4e1f-b9dc-0e81ec9c58e8",
+          "arrowParams": {
+            "thickness": 2,
+            "headRadius": 6,
+            "tailLength": 25,
+            "color": 4278190080,
+            "style": 0,
+            "tension": 1,
+            "startArrowPositionX": 1,
+            "startArrowPositionY": 0,
+            "endArrowPositionX": -1,
+            "endArrowPositionY": 0
+          },
+          "pivots": []
+        }
+      ],
+      "isDraggable": true,
+      "isResizable": false,
+      "isConnectable": true,
+      "isDeletable": true
+    },
+    {
+      "positionDx": 566.4921875,
+      "positionDy": 185.359375,
+      "size.width": 120,
+      "size.height": 80,
+      "text": "Curved",
+      "title": "",
+      "subtitle": "",
+      "textColor": 4294967295,
+      "titleColor": 4278190080,
+      "subtitleColor": 4288585374,
+      "fontFamily": null,
+      "textSize": 18,
+      "titleSize": 16,
+      "subtitleSize": 12,
+      "textIsBold": true,
+      "titleIsBold": true,
+      "subtitleIsBold": false,
+      "textAlign": 2,
+      "titleAlign": 2,
+      "subtitleAlign": 2,
+      "textPosition": 0,
+      "id": "288b9ec2-edc0-4e1f-b9dc-0e81ec9c58e8",
+      "kind": 7,
+      "handlers": [
+        0,
+        1,
+        3,
+        2
+      ],
+      "handlerSize": 25,
+      "backgroundColor": 4278228616,
+      "borderColor": 4280391411,
+      "borderThickness": 3,
+      "elevation": 4,
+      "data": null,
+      "imageProvider": null,
+      "deleteIconProvider": null,
+      "next": [],
+      "isDraggable": true,
+      "isResizable": false,
+      "isConnectable": true,
+      "isDeletable": true
+    }
+  ],
+  "dashboardSizeWidth": 1200,
+  "dashboardSizeHeight": 632,
+  "gridBackgroundParams": {
+    "offset.dx": 0,
+    "offset.dy": 0,
+    "scale": 1,
+    "gridSquare": 20,
+    "gridThickness": 0.7,
+    "secondarySquareStep": 5,
+    "backgroundColor": 4294967295,
+    "gridColor": 520093696
+  },
+  "blockDefaultZoomGestures": false,
+  "minimumZoomFactor": 0.25,
+  "arrowStyle": 0,
+  "autoConnectElements": true
+}
+''';
+    
+    dashboard.loadDashboardFromJson(exampleJsonString);
+    print('Dashboard loaded successfully from JSON string');
+  } catch (e) {
+    print('Error loading dashboard from JSON string: $e');
   }
 }
