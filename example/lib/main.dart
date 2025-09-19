@@ -90,6 +90,23 @@ class _MyHomePageState extends State<MyHomePage> {
           onNewConnection: (p1, p2) {
             debugPrint('new connection');
           },
+          onElementDeleted: (deletedElement, wasReconnected) {
+            debugPrint('Element deleted: ${deletedElement.text}');
+            debugPrint('Was reconnected: $wasReconnected');
+            
+            // Show user-friendly notification
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  wasReconnected 
+                    ? 'Element "${deletedElement.text}" deleted and elements reconnected'
+                    : 'Element "${deletedElement.text}" deleted',
+                ),
+                duration: const Duration(seconds: 2),
+                backgroundColor: wasReconnected ? Colors.green : Colors.orange,
+              ),
+            );
+          },
           onDashboardTapped: (context, position) {
             debugPrint('Dashboard tapped $position');
             _displayDashboardMenu(context, position);
@@ -137,6 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
           onPivotSecondaryPressed: (context, pivot) {
             dashboard.removeDissection(pivot);
           },
+          
         ),
       ),
       floatingActionButton: FloatingActionButton(

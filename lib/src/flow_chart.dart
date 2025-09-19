@@ -32,6 +32,7 @@ class FlowChart extends StatefulWidget {
     this.onPivotSecondaryPressed,
     this.onScaleUpdate,
     this.onNewConnection,
+    this.onElementDeleted,
   });
 
   /// callback for tap on dashboard
@@ -119,6 +120,9 @@ class FlowChart extends StatefulWidget {
   /// callback when adding a new connection
   final ConnectionListener? onNewConnection;
 
+  /// callback when an element is deleted
+  final ElementDeleteListener? onElementDeleted;
+
   /// main dashboard to use
   final Dashboard dashboard;
 
@@ -142,6 +146,9 @@ class _FlowChartState extends State<FlowChart> {
     if (widget.onNewConnection != null) {
       widget.dashboard.addConnectionListener(widget.onNewConnection!);
     }
+    if (widget.onElementDeleted != null) {
+      widget.dashboard.addElementDeleteListener(widget.onElementDeleted!);
+    }
   }
 
   @override
@@ -151,6 +158,12 @@ class _FlowChartState extends State<FlowChart> {
       widget.dashboard.gridBackgroundParams.removeOnScaleUpdateListener(
         widget.onScaleUpdate!,
       );
+    }
+    if (widget.onNewConnection != null) {
+      widget.dashboard.removeConnectionListener(widget.onNewConnection!);
+    }
+    if (widget.onElementDeleted != null) {
+      widget.dashboard.removeElementDeleteListener(widget.onElementDeleted!);
     }
     super.dispose();
   }

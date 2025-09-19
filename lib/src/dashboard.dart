@@ -19,6 +19,12 @@ typedef ConnectionListener = void Function(
   FlowElement destElement,
 );
 
+/// Listener definition for element deletion
+typedef ElementDeleteListener = void Function(
+  FlowElement deletedElement,
+  bool wasReconnected,
+);
+
 /// Class to store all the scene elements.
 /// This also acts as the controller to the flow_chart widget
 /// It notifies changes to [FlowChart]
@@ -120,6 +126,7 @@ class Dashboard extends ChangeNotifier {
   bool autoConnectElements;
 
   final List<ConnectionListener> _connectionListeners = [];
+  final List<ElementDeleteListener> _elementDeleteListeners = [];
 
   /// add listener called when a new connection is created
   void addConnectionListener(ConnectionListener listener) {
@@ -129,6 +136,16 @@ class Dashboard extends ChangeNotifier {
   /// remove connection listener
   void removeConnectionListener(ConnectionListener listener) {
     _connectionListeners.remove(listener);
+  }
+
+  /// add listener called when an element is deleted
+  void addElementDeleteListener(ElementDeleteListener listener) {
+    _elementDeleteListeners.add(listener);
+  }
+
+  /// remove element delete listener
+  void removeElementDeleteListener(ElementDeleteListener listener) {
+    _elementDeleteListeners.remove(listener);
   }
 
   /// set grid background parameters
@@ -499,7 +516,7 @@ class Dashboard extends ChangeNotifier {
 
   /// remove element
   /// return true if it has been removed
-  bool removeElement(FlowElement element, {bool notify = true}) {
+  bool removeElement(FlowElement element, {bool notify = true, bool notifyDeleteListeners = true}) {
     // remove the element
     var found = false;
     final elementId = element.id;
@@ -514,6 +531,14 @@ class Dashboard extends ChangeNotifier {
         (handlerParams) => handlerParams.destElementId == elementId,
       );
     }
+    
+    // Notify delete listeners only if requested
+    if (found && notifyDeleteListeners) {
+      for (final listener in _elementDeleteListeners) {
+        listener(element, false); // false = not reconnected
+      }
+    }
+    
     if (notify) notifyListeners();
     return found;
   }
@@ -568,7 +593,16 @@ class Dashboard extends ChangeNotifier {
     }
 
     // Now remove the element using the regular removeElement method
-    final removed = removeElement(element, notify: false);
+    // Don't notify delete listeners here since we'll do it ourselves with the correct reconnection status
+    final removed = removeElement(element, notify: false, notifyDeleteListeners: false);
+
+    // Notify delete listeners with reconnection status
+    if (removed) {
+      final wasReconnected = autoConnectElements && sourceElement != null && destElement != null;
+      for (final listener in _elementDeleteListeners) {
+        listener(element, wasReconnected);
+      }
+    }
 
     if (notify) {
       notifyListeners();
