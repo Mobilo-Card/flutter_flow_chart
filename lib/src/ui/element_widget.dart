@@ -186,6 +186,7 @@ class _ElementWidgetState extends State<ElementWidget> {
             element,
             if (widget.element.isResizable) _buildResizeHandle(),
             if (widget.element.isDeletable) _buildDeleteHandle(),
+            if (widget.element.statusIconProvider != null) _buildStatusIndicator(),
           ],
         ),
       ),
@@ -250,6 +251,40 @@ class _ElementWidgetState extends State<ElementWidget> {
           backgroundColor: Colors.white,
           borderColor: Colors.transparent, // Remove border
           icon: deleteIcon,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusIndicator() {
+    // Only show status indicator if statusIconProvider is provided
+    if (widget.element.statusIconProvider == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Container(
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Image(
+            image: widget.element.statusIconProvider!,
+            width: 24,
+            height: 24,
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );

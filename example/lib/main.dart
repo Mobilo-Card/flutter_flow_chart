@@ -57,16 +57,12 @@ class _MyHomePageState extends State<MyHomePage> {
               setState(() {}); // Refresh UI to show updated state
             },
             icon: Icon(
-              dashboard.autoConnectElements 
-                ? Icons.link 
-                : Icons.link_off,
-              color: dashboard.autoConnectElements 
-                ? Colors.green 
-                : Colors.grey,
+              dashboard.autoConnectElements ? Icons.link : Icons.link_off,
+              color: dashboard.autoConnectElements ? Colors.green : Colors.grey,
             ),
-            tooltip: dashboard.autoConnectElements 
-              ? 'Auto-connect enabled' 
-              : 'Auto-connect disabled',
+            tooltip: dashboard.autoConnectElements
+                ? 'Auto-connect enabled'
+                : 'Auto-connect disabled',
           ),
           IconButton(
             onPressed: () {
@@ -93,14 +89,14 @@ class _MyHomePageState extends State<MyHomePage> {
           onElementDeleted: (deletedElement, wasReconnected) {
             debugPrint('Element deleted: ${deletedElement.text}');
             debugPrint('Was reconnected: $wasReconnected');
-            
+
             // Show user-friendly notification
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  wasReconnected 
-                    ? 'Element "${deletedElement.text}" deleted and elements reconnected'
-                    : 'Element "${deletedElement.text}" deleted',
+                  wasReconnected
+                      ? 'Element "${deletedElement.text}" deleted and elements reconnected'
+                      : 'Element "${deletedElement.text}" deleted',
                 ),
                 duration: const Duration(seconds: 2),
                 backgroundColor: wasReconnected ? Colors.green : Colors.orange,
@@ -154,7 +150,6 @@ class _MyHomePageState extends State<MyHomePage> {
           onPivotSecondaryPressed: (context, pivot) {
             dashboard.removeDissection(pivot);
           },
-          
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -345,6 +340,19 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           ElementSettingsMenu(
             element: element,
+          ),
+          InkWell(
+            onTap: () {
+              element.setStatusIconProvider(NetworkImage(
+                  'https://via.placeholder.com/16x16/00ff00/ffffff?text=✓'));
+            },
+            child: const Text('Set Status Icon'),
+          ),
+          InkWell(
+            onTap: () {
+              element.setStatusIconProvider(null);
+            },
+            child: const Text('Remove Status Icon'),
           ),
         ],
         parentContext: context,
@@ -763,7 +771,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     Handler.rightCenter,
                   ],
                   // Custom delete icon using a network image
-                  deleteIconProvider: NetworkImage('https://via.placeholder.com/20x20/ff0000/ffffff?text=X'),
+                  deleteIconProvider: NetworkImage(
+                      'https://via.placeholder.com/20x20/ff0000/ffffff?text=X'),
                 ),
               );
             },
@@ -783,6 +792,34 @@ class _MyHomePageState extends State<MyHomePage> {
           ActionChip(
             label: const Text('LOAD from JSON String'),
             onPressed: () => loadDashboardFromJsonString(dashboard),
+          ),
+          ActionChip(
+            label: const Text('Add Element with Status Icon'),
+            onPressed: () {
+              dashboard.addElement(
+                FlowElement(
+                  position: position,
+                  size: const Size(120, 60),
+                  text: 'Status',
+                  textColor: Colors.black,
+                  backgroundColor: Colors.white,
+                  textSize: 16,
+                  textIsBold: true,
+                  textAlign: TextAlign.center,
+                  handlerSize: 25,
+                  kind: ElementKind.rectangle,
+                  isDeletable: false,
+                  imageProvider: const AssetImage('images/gmail.png'),
+                  statusIconProvider: const AssetImage('images/check.png'),
+                  handlers: [
+                    Handler.bottomCenter,
+                    Handler.topCenter,
+                    Handler.leftCenter,
+                    Handler.rightCenter,
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -953,7 +990,7 @@ void loadDashboardFromJsonString(Dashboard dashboard) {
   "autoConnectElements": true
 }
 ''';
-    
+
     dashboard.loadDashboardFromJson(exampleJsonString);
     print('Dashboard loaded successfully from JSON string');
   } catch (e) {

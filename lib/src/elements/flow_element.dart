@@ -45,6 +45,24 @@ enum TextPosition {
   below,
 }
 
+/// Status indicator for the element
+enum ElementStatus {
+  ///
+  none,
+
+  ///
+  success,
+
+  ///
+  error,
+
+  ///
+  warning,
+
+  ///
+  info,
+}
+
 /// Handler supported by elements
 enum Handler {
   ///
@@ -116,6 +134,8 @@ class FlowElement extends ChangeNotifier {
     this.isResizable = false,
     this.isConnectable = true,
     this.isDeletable = true,
+    this.status = ElementStatus.none,
+    this.statusIconProvider,
     List<ConnectionParams>? next,
   })  : next = next ?? [],
         id = const Uuid().v4(),
@@ -181,6 +201,9 @@ class FlowElement extends ChangeNotifier {
       isResizable: map['isResizable'] as bool? ?? false,
       isConnectable: map['isConnectable'] as bool? ?? true,
       isDeletable: map['isDeletable'] as bool? ?? false,
+      status: map['status'] != null 
+          ? ElementStatus.values[map['status'] as int]
+          : ElementStatus.none,
     )
       ..setId(map['id'] as String)
       ..position = Offset(
@@ -193,6 +216,9 @@ class FlowElement extends ChangeNotifier {
           : null
       ..deleteIconProvider = map['deleteIconProvider'] != null 
           ? AssetImage(map['deleteIconProvider'] as String)
+          : null
+      ..statusIconProvider = map['statusIconProvider'] != null 
+          ? AssetImage(map['statusIconProvider'] as String)
           : null;
     return e;
   }
@@ -311,6 +337,12 @@ class FlowElement extends ChangeNotifier {
 
   /// Image provider for the delete icon (can be AssetImage, NetworkImage, etc.)
   ImageProvider? deleteIconProvider;
+
+  /// Status indicator for the element
+  ElementStatus status;
+
+  /// Image provider for the status icon (can be AssetImage, NetworkImage, etc.)
+  ImageProvider? statusIconProvider;
 
   @override
   String toString() {
@@ -474,6 +506,18 @@ class FlowElement extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Set status
+  void setStatus(ElementStatus status) {
+    this.status = status;
+    notifyListeners();
+  }
+
+  /// Set status icon provider
+  void setStatusIconProvider(ImageProvider? provider) {
+    statusIconProvider = provider;
+    notifyListeners();
+  }
+
   /// Change element position in the dashboard
   void changePosition(Offset newPosition) {
     position = newPosition;
@@ -528,7 +572,9 @@ class FlowElement extends ChangeNotifier {
         isResizable.hashCode ^
         isConnectable.hashCode ^
         isDeletable.hashCode ^
-        imageProvider.hashCode;
+        imageProvider.hashCode ^
+        status.hashCode ^
+        statusIconProvider.hashCode;
   }
 
   ///
@@ -571,6 +617,8 @@ class FlowElement extends ChangeNotifier {
       'isResizable': isResizable,
       'isConnectable': isConnectable,
       'isDeletable': isDeletable,
+      'status': status.index,
+      'statusIconProvider': statusIconProvider is AssetImage ? (statusIconProvider as AssetImage).assetName : null,
     };
   }
 
