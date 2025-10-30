@@ -19,6 +19,7 @@ class ElementWidget extends StatefulWidget {
     required this.dashboard,
     required this.element,
     super.key,
+    this.onElementDeletedPress,
     this.onElementPressed,
     this.onElementSecondaryTapped,
     this.onElementLongPressed,
@@ -34,6 +35,11 @@ class ElementWidget extends StatefulWidget {
 
   ///
   final FlowElement element;
+
+  ///
+  ///
+  final Future<bool> Function(BuildContext context, FlowElement element)?
+      onElementDeletedPress;
 
   ///
   final void Function(BuildContext context, Offset position)? onElementPressed;
@@ -231,9 +237,14 @@ class _ElementWidgetState extends State<ElementWidget> {
     }
 
     return Listener(
-      onPointerUp: (event) {
+      onPointerUp: (event) async {
         debugPrint('Delete button pressed for element: ${widget.element.text}');
         debugPrint('Auto-connect enabled: ${widget.dashboard.autoConnectElements}');
+        var canDelete = true;
+        if (widget.onElementDeletedPress != null) {
+          canDelete = await widget.onElementDeletedPress!(context, widget.element);
+        }
+        if (!canDelete) return;
         // Use removeElementAndReconnect if auto-connect is enabled, otherwise use regular removeElement
         if (widget.dashboard.autoConnectElements) {
           debugPrint('Calling removeElementAndReconnect');

@@ -20,6 +20,7 @@ class FlowChart extends StatefulWidget {
     this.onElementSecondaryTapped,
     this.onElementLongPressed,
     this.onElementSecondaryLongTapped,
+    this.onElementDeletedPress,
     this.onDashboardTapped,
     this.onDashboardSecondaryTapped,
     this.onDashboardLongTapped,
@@ -128,6 +129,10 @@ class FlowChart extends StatefulWidget {
 
   /// Trigger for the scale change
   final void Function(double scale)? onScaleUpdate;
+
+  /// callback when delete is pressed; return true to confirm deletion
+  final Future<bool> Function(BuildContext context, FlowElement element)?
+      onElementDeletedPress;
 
   @override
   State<FlowChart> createState() => _FlowChartState();
@@ -274,6 +279,7 @@ class _FlowChartState extends State<FlowChart> {
               key: UniqueKey(),
               dashboard: widget.dashboard,
               element: widget.dashboard.elements.elementAt(i),
+              onElementDeletedPress: widget.onElementDeletedPress,
               onElementPressed: widget.onElementPressed == null
                   ? null
                   : (context, position) => widget.onElementPressed!(

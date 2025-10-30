@@ -41,6 +41,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Dashboard dashboard = Dashboard();
+  void Function(BuildContext context, FlowElement element)? onElementDeletePressed;
 
   /// Notifier for the tension slider
   final segmentedTension = ValueNotifier<double>(1);
@@ -86,6 +87,27 @@ class _MyHomePageState extends State<MyHomePage> {
           onNewConnection: (p1, p2) {
             debugPrint('new connection');
           },
+          onElementDeletedPress: (context, element) async {
+            final result = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Delete element?'),
+                content: Text('Are you sure you want to delete "${element.text}"?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: const Text('No'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    child: const Text('Yes'),
+                  ),
+                ],
+              ),
+            );
+            return result == true;
+          },
+          
           onElementDeleted: (deletedElement, wasReconnected) {
             debugPrint('Element deleted: ${deletedElement.text}');
             debugPrint('Was reconnected: $wasReconnected');
@@ -306,7 +328,14 @@ class _MyHomePageState extends State<MyHomePage> {
             style: const TextStyle(fontWeight: FontWeight.w900),
           ),
           InkWell(
-            onTap: () => dashboard.removeElement(element),
+            onTap: () {
+              final cb = onElementDeletePressed;
+              if (cb != null) {
+                cb(context, element);
+              } else {
+                dashboard.removeElement(element);
+              }
+            },
             child: const Text('Delete'),
           ),
           TextMenu(element: element),
