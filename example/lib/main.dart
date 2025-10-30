@@ -403,6 +403,27 @@ class _MyHomePageState extends State<MyHomePage> {
               );
             },
           ),
+           ActionChip(
+            label: const Text('Add ar index 1'),
+            onPressed: () {
+              dashboard.insertElement(
+                1,
+                FlowElement(
+                  position: position,
+                  size: const Size(80, 80),
+                  text: '${dashboard.elements.length}',
+                  handlerSize: 25,
+                  kind: ElementKind.diamond,
+                  handlers: [
+                    Handler.bottomCenter,
+                    Handler.topCenter,
+                    Handler.leftCenter,
+                    Handler.rightCenter,
+                  ],
+                ),
+              );
+            },
+          ),
           ActionChip(
             label: const Text('Add rect'),
             onPressed: () {
@@ -422,6 +443,27 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                   // Example: Custom delete icon using a network image
                   // deleteIconProvider: NetworkImage('https://via.placeholder.com/20x20/ff0000/ffffff?text=X'),
+                ),
+              );
+            },
+          ),
+          ActionChip(
+            label: const Text('Insert rect (linked) at second index'),
+            onPressed: () {
+              dashboard.insertElementLinked(
+                1,
+                FlowElement(
+                  position: position,
+                  size: const Size(100, 50),
+                  text: 'Head',
+                  handlerSize: 25,
+                  kind: ElementKind.rectangle,
+                  handlers: [
+                    Handler.bottomCenter,
+                    Handler.topCenter,
+                    Handler.leftCenter,
+                    Handler.rightCenter,
+                  ],
                 ),
               );
             },
@@ -777,50 +819,51 @@ class _MyHomePageState extends State<MyHomePage> {
               );
             },
           ),
-          ActionChip(
-            label: const Text('SAVE dashboard'),
-            onPressed: () => saveDashboard(dashboard),
-          ),
-          ActionChip(
-            label: const Text('LOAD dashboard'),
-            onPressed: () => loadDashboard(dashboard),
-          ),
-          ActionChip(
-            label: const Text('SAVE as JSON String'),
-            onPressed: () => saveDashboardAsJsonString(dashboard),
-          ),
-          ActionChip(
-            label: const Text('LOAD from JSON String'),
-            onPressed: () => loadDashboardFromJsonString(dashboard),
-          ),
-          ActionChip(
-            label: const Text('Add Element with Status Icon'),
-            onPressed: () {
-              dashboard.addElement(
-                FlowElement(
-                  position: position,
-                  size: const Size(120, 60),
-                  text: 'Status',
-                  textColor: Colors.black,
-                  backgroundColor: Colors.white,
-                  textSize: 16,
-                  textIsBold: true,
-                  textAlign: TextAlign.center,
-                  handlerSize: 25,
-                  kind: ElementKind.rectangle,
-                  isDeletable: false,
-                  imageProvider: const AssetImage('images/gmail.png'),
-                  statusIconProvider: const AssetImage('images/check.png'),
-                  handlers: [
-                    Handler.bottomCenter,
-                    Handler.topCenter,
-                    Handler.leftCenter,
-                    Handler.rightCenter,
-                  ],
-                ),
-              );
-            },
-          ),
+          // ActionChip(
+          //   label: const Text('SAVE dashboard'),
+          //   onPressed: () => saveDashboard(dashboard),
+          // ),
+          // ActionChip(
+          //   label: const Text('LOAD dashboard'),
+          //   onPressed: () => loadDashboard(dashboard),
+          // ),
+          // ActionChip(
+          //   label: const Text('SAVE as JSON String'),
+          //   onPressed: () => saveDashboardAsJsonString(dashboard),
+          // ),
+          // ActionChip(
+          //   label: const Text('LOAD from JSON String'),
+          //   onPressed: () => loadDashboardFromJsonString(dashboard),
+          // ),
+          // ActionChip(
+          //   label: const Text('Add Element with Status Icon'),
+          //   onPressed: () {
+          //     dashboard.addElement(
+          //       FlowElement(
+          //         position: position,
+          //         size: const Size(120, 60),
+          //         text: 'Status',
+          //         textColor: Colors.black,
+          //         backgroundColor: Colors.white,
+          //         textSize: 16,
+          //         textIsBold: true,
+          //         textAlign: TextAlign.center,
+          //         handlerSize: 25,
+          //         kind: ElementKind.rectangle,
+          //         isDeletable: false,
+          //         imageProvider: const AssetImage('images/gmail.png'),
+          //         statusIconProvider: const AssetImage('images/check.png'),
+          //         handlers: [
+          //           Handler.bottomCenter,
+          //           Handler.topCenter,
+          //           Handler.leftCenter,
+          //           Handler.rightCenter,
+          //         ],
+          //       ),
+          //     );
+          //   },
+          // ),
+       
         ],
       ),
     );

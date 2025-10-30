@@ -242,6 +242,74 @@ class Dashboard extends ChangeNotifier {
     }
   }
 
+  /// Insert a [FlowElement] at the given [index], similar to List.insert.
+  /// This is a convenience around [addElement] with the [position] parameter.
+  void insertElement(int index, FlowElement element, {bool notify = true}) {
+    addElement(element, notify: notify, position: index);
+  }
+
+  /// Insert like a linked list: maintains a single chain by rewiring connections.
+  /// - If there is a previous element, connect previous -> new element
+  /// - If there is a next element, connect new element -> next
+  /// - If both previous and next exist, remove previous -> next to keep linear chain
+  void insertElementLinked(int index, FlowElement element, {bool notify = true}) {
+    // Clamp index to valid bounds
+    final clampedIndex = index < 0
+        ? 0
+        : (index > elements.length ? elements.length : index);
+
+    // Capture neighbors before insertion
+    final hasPrev = clampedIndex > 0;
+    final hasNext = clampedIndex < elements.length;
+    final FlowElement? previousElement = hasPrev ? elements[clampedIndex - 1] : null;
+    final FlowElement? nextElement = hasNext ? elements[clampedIndex] : null;
+
+    // Perform insertion without notifying yet
+    addElement(element, notify: false, position: clampedIndex);
+
+    if (autoConnectElements) {
+      // Build common arrow params
+      ArrowParams buildParams(Alignment start, Alignment end) {
+        return ArrowParams(
+          startArrowPosition: start,
+          endArrowPosition: end,
+          style: defaultArrowStyle,
+          color: Colors.black,
+          thickness: 2.0,
+        )..setScale(1, gridBackgroundParams.scale);
+      }
+
+      // If both neighbors exist, remove previous -> next connection to keep a single chain
+      if (previousElement != null && nextElement != null) {
+        removeConnectionByElements(previousElement, nextElement, notify: false);
+      }
+
+      // Ensure previous -> new
+      if (previousElement != null) {
+        addNextById(
+          previousElement,
+          element.id,
+          buildParams(Alignment.centerRight, Alignment.centerLeft),
+          notify: false,
+        );
+      }
+
+      // Ensure new -> next
+      if (nextElement != null) {
+        addNextById(
+          element,
+          nextElement.id,
+          buildParams(Alignment.centerRight, Alignment.centerLeft),
+          notify: false,
+        );
+      }
+    }
+
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
   /// Enable editing mode for an element
   void setElementEditingText(
     FlowElement element,
