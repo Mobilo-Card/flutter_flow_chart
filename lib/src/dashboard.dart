@@ -642,6 +642,9 @@ class Dashboard extends ChangeNotifier {
       debugPrint('No destination element (this is the last element)');
     }
 
+    // Store the deleted element's position before removal
+    final deletedElementPosition = element.position;
+
     // If auto-connect is enabled and we have both source and destination, connect them BEFORE removal
     if (autoConnectElements && sourceElement != null && destElement != null) {
       debugPrint('Auto-reconnecting: ${sourceElement.text} -> ${destElement.text}');
@@ -658,6 +661,29 @@ class Dashboard extends ChangeNotifier {
       // Use addNextById like in addElement - this works because destElement is still in the elements list
       addNextById(sourceElement, destElement.id, arrowParams, notify: false);
       debugPrint('Auto-reconnection created: ${sourceElement.next.length} connections from ${sourceElement.text}');
+    }
+
+    // Shift all elements after the deleted one forward to fill the gap
+    // Store positions first before shifting to avoid overwriting
+    final positionsAfterDeleted = <Offset>[];
+    for (int i = elementIndex + 1; i < elements.length; i++) {
+      positionsAfterDeleted.add(elements[i].position);
+    }
+
+    // Now shift each element to the position of the previous one
+    // First element after deleted moves to deleted element's position
+    // Each subsequent element moves to the old position of the element before it
+    if (positionsAfterDeleted.isNotEmpty) {
+      // First element after deleted moves to deleted element's position
+      elements[elementIndex + 1].changePosition(deletedElementPosition);
+      debugPrint('Shifting element ${elementIndex + 1} to deleted element position (${deletedElementPosition.dx}, ${deletedElementPosition.dy})');
+      
+      // All other elements shift to the previous element's old position
+      for (int i = 1; i < positionsAfterDeleted.length; i++) {
+        final newPosition = positionsAfterDeleted[i - 1];
+        elements[elementIndex + 1 + i].changePosition(newPosition);
+        debugPrint('Shifting element ${elementIndex + 1 + i} to position (${newPosition.dx}, ${newPosition.dy})');
+      }
     }
 
     // Now remove the element using the regular removeElement method
