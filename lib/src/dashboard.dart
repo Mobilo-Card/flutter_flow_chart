@@ -244,25 +244,149 @@ class Dashboard extends ChangeNotifier {
 
   /// Insert a [FlowElement] at the given [index], similar to List.insert.
   /// This is a convenience around [addElement] with the [position] parameter.
+  /// Includes position shifting logic similar to delete: elements at and after
+  /// the insertion index are shifted forward to make room for the new element.
   void insertElement(int index, FlowElement element, {bool notify = true}) {
-    addElement(element, notify: notify, position: index);
+    debugPrint('insertElement called at index: $index');
+    // Clamp index to valid bounds
+    final clampedIndex = index < 0
+        ? 0
+        : (index > elements.length ? elements.length : index);
+    
+    debugPrint('Clamped index: $clampedIndex, total elements: ${elements.length}');
+
+    // Store positions of elements at and after the insertion point before insertion
+    final positionsAtAndAfterInsertion = <Offset>[];
+    for (int i = clampedIndex; i < elements.length; i++) {
+      positionsAtAndAfterInsertion.add(elements[i].position);
+    }
+
+    // Calculate where to position the new element
+    Offset newElementPosition;
+    if (clampedIndex > 0 && clampedIndex < elements.length) {
+      // There's both a previous and next element - position new element between them
+      final previousElement = elements[clampedIndex - 1];
+      final nextElement = elements[clampedIndex];
+      
+      // Calculate spacing: distance from previous element's right edge to next element's left edge
+      final previousRight = previousElement.position.dx + previousElement.size.width;
+      final nextLeft = nextElement.position.dx;
+      final spacing = nextLeft - previousRight;
+      
+      // Position new element: previous element's right + half the spacing (or use next element's position if spacing is too small)
+      if (spacing > element.size.width) {
+        newElementPosition = Offset(
+          previousRight + spacing / 2 - element.size.width / 2,
+          previousElement.position.dy,
+        );
+      } else {
+        // Use next element's position, elements will shift
+        newElementPosition = nextElement.position;
+      }
+      debugPrint('Positioning new element between ${previousElement.text} and ${nextElement.text} at (${newElementPosition.dx}, ${newElementPosition.dy})');
+    } else if (clampedIndex > 0) {
+      // Only previous element exists - position new element after it
+      final previousElement = elements[clampedIndex - 1];
+      final previousRight = previousElement.position.dx + previousElement.size.width;
+      newElementPosition = Offset(
+        previousRight + 50, // Default spacing
+        previousElement.position.dy,
+      );
+      debugPrint('Positioning new element after ${previousElement.text} at (${newElementPosition.dx}, ${newElementPosition.dy})');
+    } else if (clampedIndex < elements.length) {
+      // Only next element exists - use its position, it will shift
+      newElementPosition = elements[clampedIndex].position;
+      debugPrint('Positioning new element at next element position (${newElementPosition.dx}, ${newElementPosition.dy})');
+    } else {
+      // No elements - use default position
+      newElementPosition = Offset.zero;
+      debugPrint('Positioning new element at default position (0, 0)');
+    }
+
+    // Set the new element's position
+    element.position = newElementPosition;
+
+    // Perform insertion without notifying yet
+    addElement(element, notify: false, position: clampedIndex);
+
+    // Shift all elements that were at or after the insertion point forward to make room
+    // Similar to delete but in reverse: elements shift forward (right) to make room
+    if (positionsAtAndAfterInsertion.isNotEmpty) {
+      // Calculate shift amount based on new element's position and size
+      final newElementRight = newElementPosition.dx + element.size.width;
+      final nextElementLeft = positionsAtAndAfterInsertion[0].dx;
+      final requiredShift = newElementRight - nextElementLeft + 50; // Add spacing
+      
+      // Ensure we always shift forward (positive shift)
+      final shiftAmount = Offset(requiredShift > 0 ? requiredShift : element.size.width + 50, 0);
+      
+      // Shift elements starting from the one after the inserted element
+      // Each element moves forward by the shift amount
+      for (int i = 0; i < positionsAtAndAfterInsertion.length; i++) {
+        final oldPosition = positionsAtAndAfterInsertion[i];
+        final newPosition = oldPosition + shiftAmount;
+        elements[clampedIndex + 1 + i].changePosition(newPosition);
+        debugPrint('Shifting element ${clampedIndex + 1 + i} from (${oldPosition.dx}, ${oldPosition.dy}) to (${newPosition.dx}, ${newPosition.dy})');
+      }
+    }
+
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   /// Insert like a linked list: maintains a single chain by rewiring connections.
   /// - If there is a previous element, connect previous -> new element
   /// - If there is a next element, connect new element -> next
   /// - If both previous and next exist, remove previous -> next to keep linear chain
+  /// Includes position shifting logic similar to delete: elements at and after
+  /// the insertion index are shifted forward to make room for the new element.
   void insertElementLinked(int index, FlowElement element, {bool notify = true}) {
+    debugPrint('insertElementLinked called at index: $index');
     // Clamp index to valid bounds
     final clampedIndex = index < 0
         ? 0
         : (index > elements.length ? elements.length : index);
+    
+    debugPrint('Clamped index: $clampedIndex, total elements: ${elements.length}');
 
     // Capture neighbors before insertion
     final hasPrev = clampedIndex > 0;
     final hasNext = clampedIndex < elements.length;
     final FlowElement? previousElement = hasPrev ? elements[clampedIndex - 1] : null;
     final FlowElement? nextElement = hasNext ? elements[clampedIndex] : null;
+
+    // Store positions of elements at and after the insertion point before insertion
+    // Similar to delete: store positions before shifting
+    final positionsAtAndAfterInsertion = <Offset>[];
+    for (int i = clampedIndex; i < elements.length; i++) {
+      positionsAtAndAfterInsertion.add(elements[i].position);
+    }
+
+    // New element takes the position of the element that was at the insertion index
+    // This is the inverse of delete: new element gets the position that the next element had
+    Offset newElementPosition;
+    if (nextElement != null) {
+      // New element takes the position of the element that was at insertion index
+      newElementPosition = nextElement.position;
+      debugPrint('New element taking position of ${nextElement.text} at (${newElementPosition.dx}, ${newElementPosition.dy})');
+    } else {
+      // No next element - position after previous or use default
+      if (previousElement != null) {
+        final previousRight = previousElement.position.dx + previousElement.size.width;
+        newElementPosition = Offset(
+          previousRight + 50, // Default spacing
+          previousElement.position.dy,
+        );
+        debugPrint('Positioning new element after ${previousElement.text} at (${newElementPosition.dx}, ${newElementPosition.dy})');
+      } else {
+        newElementPosition = Offset.zero;
+        debugPrint('Positioning new element at default position (0, 0)');
+      }
+    }
+
+    // Set the new element's position
+    element.position = newElementPosition;
 
     // Perform insertion without notifying yet
     addElement(element, notify: false, position: clampedIndex);
@@ -302,6 +426,39 @@ class Dashboard extends ChangeNotifier {
           buildParams(Alignment.centerRight, Alignment.centerLeft),
           notify: false,
         );
+      }
+    }
+
+    // Shift all elements that were at or after the insertion point forward to make room
+    // This is the inverse of delete: each element moves to the position of the element after it
+    // In delete: element[i+1] -> deleted position, element[i+2] -> element[i+1]'s old position, etc.
+    // In insert: NEW -> element[i]'s position, element[i] -> element[i+1]'s old position, element[i+1] -> element[i+2]'s old position, etc.
+    if (positionsAtAndAfterInsertion.isNotEmpty) {
+      // Shift elements that have a next element's position to move to
+      // Loop goes from i=1 to i < length, so handles elements that can move to next element's position
+      final numElementsToShift = positionsAtAndAfterInsertion.length;
+      for (int i = 1; i < numElementsToShift; i++) {
+        final newPosition = positionsAtAndAfterInsertion[i];
+        elements[clampedIndex + i].changePosition(newPosition);
+        debugPrint('Shifting element ${clampedIndex + i} to position (${newPosition.dx}, ${newPosition.dy})');
+      }
+      
+      // The last element (the one that was originally at the last position in positionsAtAndAfterInsertion)
+      // needs to shift forward to a calculated position since there's no "next" element's position for it
+      if (numElementsToShift > 0) {
+        final lastElementIndex = clampedIndex + numElementsToShift;
+        if (lastElementIndex < elements.length) {
+          // Get the element just before the last one (which we just shifted in the loop above)
+          final previousElementIndex = clampedIndex + numElementsToShift - 1;
+          if (previousElementIndex < elements.length) {
+            final previousElement = elements[previousElementIndex];
+            final previousRight = previousElement.position.dx + previousElement.size.width;
+            final spacing = 50.0; // Default spacing
+            final lastElementNewPosition = Offset(previousRight + spacing, previousElement.position.dy);
+            elements[lastElementIndex].changePosition(lastElementNewPosition);
+            debugPrint('Shifting last element ${lastElementIndex} forward to (${lastElementNewPosition.dx}, ${lastElementNewPosition.dy})');
+          }
+        }
       }
     }
 

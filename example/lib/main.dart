@@ -727,13 +727,14 @@ class _MyHomePageState extends State<MyHomePage> {
             },
           ),
           ActionChip(
-            label: const Text('Add rect with right-aligned text'),
+            label: const Text('Add rect at index 1'),
             onPressed: () {
-              dashboard.addElement(
+              dashboard.insertElementLinked(
+                1,
                 FlowElement(
                   position: position,
                   size: const Size(120, 60),
-                  text: 'Right Aligned Text',
+                  text: 'Index 1',
                   textColor: Colors.black,
                   backgroundColor: Colors.orange,
                   textSize: 16,
